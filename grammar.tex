@@ -1,0 +1,484 @@
+\chapter{Gram\'atica BNF da linguagem de programa\ca o do prot\'otipo}\begin{espacosimples}\begin{scriptsize}\begin{lstlisting}
+Grammar
+
+    0 $accept: Goal "end of file"
+  
+    1 Goal: /* empty */
+      2     | GoalOptionRepeat
+  
+    3 GoalOptionRepeat: GoalOption
+      4                 | GoalOptionRepeat GoalOption
+  
+    5 GoalOption: TypeDeclaration
+  
+    6 Literal: "null"
+      7        | "integer literal"
+      8        | "float literal"
+      9        | "char literal"
+     10        | "string literal"
+     11        | "regex literal"
+     12        | BooleanLiteral
+     13        | ArrayLiteral
+     14        | HashLiteral
+  
+   15 BooleanLiteral: "false"
+     16               | "true"
+  
+   17 ArrayLiteral: "[" "]"
+     18             | "[" ExpressionList "]"
+     19             | "[" ExpressionList "," "]"
+  
+   20 HashLiteral: "{" HashPairListOpt "}"
+  
+   21 HashPairListOpt: ":"
+     22                | HashPairList
+  
+   23 HashPairList: HashPair
+     24             | HashPairList "," HashPair
+  
+   25 HashPair: "identifier literal" ":" Expression
+     26         | "string literal" ":" Expression
+  
+   27 TypeName: QualifiedIdentifier
+  
+   28 Type: NonArrayType
+     29     | ArrayType
+     30     | "var"
+  
+   31 NonArrayType: SimpleType
+     32             | TypeName
+  
+   33 SimpleType: PrimitiveType
+     34           | ClassType
+  
+   35 PrimitiveType: NumericType
+     36              | "bool"
+  
+   37 NumericType: IntegralType
+     38            | FloatingPointType
+     39            | "decimal"
+  
+   40 IntegralType: "byte"
+     41             | "short"
+     42             | "unsigned" "short"
+     43             | "int"
+     44             | "unsigned" "int"
+     45             | "long"
+     46             | "unsigned" "long"
+     47             | "long" "long"
+     48             | "char"
+  
+   49 FloatingPointType: "float"
+     50                  | "double"
+  
+   51 ClassType: "string"
+     52          | "regex"
+     53          | "array"
+     54          | "hash"
+  
+   55 ArrayType: ArrayType RankSpecifier
+     56          | SimpleType RankSpecifier
+     57          | QualifiedIdentifier RankSpecifier
+  
+   58 RankSpecifier: "[" "]"
+  
+   59 ArgumentList: Argument
+     60             | ArgumentList "," Argument
+  
+   61 Argument: Expression
+  
+   62 PrimaryExpression: ParenthesizedExpression
+     63                  | PrimaryExpressionNoParentesis
+  
+   64 ParenthesizedExpression: "(" Expression ")"
+  
+   65 PrimaryExpressionNoParentesis: Literal
+     66                              | ArrayCreationExpression
+     67                              | MemberAccess
+     68                              | InvocationExpression
+     69                              | ElementAccess
+     70                              | NewExpression
+     71                              | TypeofExpression
+     72                              | SizeofExpression
+  
+   73 ArrayCreationExpression: "new" NonArrayType "[" ExpressionList "]"
+     74                        | "new" NonArrayType "[" ExpressionList "]" ArrayInitializer
+     75                        | "new" ArrayType
+     76                        | "new" ArrayType ArrayInitializer
+  
+   77 MemberAccess: PrimaryExpression "." "identifier literal"
+     78             | PrimitiveType "." "identifier literal"
+     79             | ClassType "." "identifier literal"
+  
+   80 InvocationExpression: PrimaryExpressionNoParentesis "(" ArgumentList ")"
+     81                     | QualifiedIdentifier "(" ")"
+     82                     | QualifiedIdentifier "(" ArgumentList ")"
+  
+   83 ElementAccess: PrimaryExpression "[" ExpressionList "]"
+     84              | QualifiedIdentifier "[" ExpressionList "]"
+  
+   85 ExpressionList: Expression
+     86               | ExpressionList "," Expression
+  
+   87 PostIncrementExpression: PostfixExpression "++"
+  
+   88 PostDecrementExpression: PostfixExpression "--"
+  
+   89 NewExpression: ObjectCreationExpression
+  
+   90 ObjectCreationExpression: "new" Type "(" ")"
+     91                         | "new" Type "(" ArgumentList ")"
+  
+   92 TypeofExpression: "typeof" "(" Type ")"
+     93                 | "typeof" "(" "void" ")"
+  
+   94 SizeofExpression: "sizeof" "(" Type ")"
+  
+   95 AddressofExpression: "&" UnaryExpression
+  
+   96 PostfixExpression: PrimaryExpression
+     97                  | QualifiedIdentifier
+     98                  | PostIncrementExpression
+     99                  | PostDecrementExpression
+  
+  100 UnaryExpressionNotPlusMinus: PostfixExpression
+    101                            | "!" UnaryExpression
+    102                            | "~" UnaryExpression
+  
+  103 PreIncrementExpression: "++" UnaryExpression
+  
+  104 PreDecrementExpression: "--" UnaryExpression
+  
+  105 UnaryExpression: UnaryExpressionNotPlusMinus
+    106                | "+" UnaryExpression
+    107                | "-" UnaryExpression
+    108                | "*" UnaryExpression
+    109                | PreIncrementExpression
+    110                | PreDecrementExpression
+    111                | AddressofExpression
+  
+  112 PowerExpression: UnaryExpression
+    113                | PowerExpression "**" UnaryExpression
+  
+  114 MultiplicativeExpression: PowerExpression
+    115                         | MultiplicativeExpression "*" PowerExpression
+    116                         | MultiplicativeExpression "/" PowerExpression
+    117                         | MultiplicativeExpression "%" PowerExpression
+  
+  118 AdditiveExpression: MultiplicativeExpression
+    119                   | AdditiveExpression "+" MultiplicativeExpression
+    120                   | AdditiveExpression "-" MultiplicativeExpression
+  
+  121 ShiftExpression: AdditiveExpression
+    122                | ShiftExpression "<<" AdditiveExpression
+    123                | ShiftExpression ">>" AdditiveExpression
+  
+  124 RelationalExpression: ShiftExpression
+    125                     | RelationalExpression "<" ShiftExpression
+    126                     | RelationalExpression ">" ShiftExpression
+    127                     | RelationalExpression "<=" ShiftExpression
+    128                     | RelationalExpression ">=" ShiftExpression
+    129                     | RelationalExpression "=~" ShiftExpression
+    130                     | RelationalExpression "!~" ShiftExpression
+    131                     | RelationalExpression "is" Type
+    132                     | RelationalExpression "as" Type
+  
+  133 EqualityExpression: RelationalExpression
+    134                   | EqualityExpression "==" RelationalExpression
+    135                   | EqualityExpression "!=" RelationalExpression
+  
+  136 AndExpression: EqualityExpression
+    137              | AndExpression "&" EqualityExpression
+  
+  138 ExclusiveOrExpression: AndExpression
+    139                      | ExclusiveOrExpression "^" AndExpression
+  
+  140 InclusiveOrExpression: ExclusiveOrExpression
+    141                      | InclusiveOrExpression "|" ExclusiveOrExpression
+  
+  142 ConditionalAndExpression: InclusiveOrExpression
+    143                         | ConditionalAndExpression "&&" InclusiveOrExpression
+  
+  144 ConditionalOrExpression: ConditionalAndExpression
+    145                        | ConditionalOrExpression "||" ConditionalAndExpression
+  
+  146 RangeExpression: ConditionalOrExpression
+    147                | RangeExpression ".." ConditionalOrExpression
+    148                | RangeExpression "..." ConditionalOrExpression
+  
+  149 NullCoalescingExpression: RangeExpression
+    150                         | NullCoalescingExpression "??" RangeExpression
+  
+  151 ConditionalExpression: NullCoalescingExpression
+    152                      | ConditionalExpression "?" Expression ":" Expression
+  
+  153 AssignmentExpression: UnaryExpression AssignmentOperator Expression
+  
+  154 AssignmentOperator: "="
+    155                   | "+="
+    156                   | "-="
+    157                   | "*="
+    158                   | "/="
+    159                   | "^="
+  
+  160 SelectOrGroupClause: GroupByClause
+    161                    | SelectClause
+  
+  162 GroupByClause: "group" "identifier literal" "by" Expression
+    163              | "group" "identifier literal" "by" Expression "into" "identifier literal"
+  
+  164 SelectClause: "select" ExpressionList
+  
+  165 LetClause: "let" "identifier literal" "=" Expression
+  
+  166 RangeClause: "skip" Expression
+    167            | "step" Expression
+    168            | "take" Expression
+  
+  169 OrderExpressionList: OrderExpression
+    170                    | OrderExpressionList "," OrderExpression
+  
+  171 OrderExpression: Expression OrderOperatorOpt
+  
+  172 OrderOperatorOpt: /* empty */
+    173                 | "asc"
+    174                 | "desc"
+  
+  175 JoinClause: "join" QueryOrigin "on" BooleanExpression
+    176           | "left" "join" QueryOrigin "on" BooleanExpression
+    177           | "right" "join" QueryOrigin "on" BooleanExpression
+    178           | "join" QueryOrigin "on" BooleanExpression "into" "identifier literal"
+    179           | "left" "join" QueryOrigin "on" BooleanExpression "into" "identifier literal"
+    180           | "right" "join" QueryOrigin "on" BooleanExpression "into" "identifier literal"
+  
+  181 QueryBodyMemberRepeat: QueryBodyMember
+    182                      | QueryBodyMemberRepeat QueryBodyMember
+  
+  183 QueryBodyMember: "where" BooleanExpression
+    184                | "order" "by" OrderExpressionList
+    185                | JoinClause
+    186                | RangeClause
+    187                | LetClause
+  
+  188 QueryBody: QueryBodyMemberRepeat SelectOrGroupClause
+    189          | QueryBodyMemberRepeat
+    190          | SelectOrGroupClause
+  
+  191 QueryOrigin: "identifier literal" "in" Expression
+  
+  192 QueryExpression: "from" QueryOrigin
+    193                | "from" QueryOrigin QueryBody
+  
+  194 LambdaParameter: Type "identifier literal"
+    195                | "identifier literal"
+  
+  196 LambdaParameterList: LambdaParameter
+    197                    | LambdaParameterList "," LambdaParameter
+  
+  198 LambdaParameterListOpt: /* empty */
+    199                       | LambdaParameterList
+  
+  200 LambdaExpressionBody: Expression
+    201                     | Block
+  
+  202 LambdaExpression: "identifier literal" "=>" LambdaExpressionBody
+    203                 | "(" LambdaParameterListOpt ")" "=>" LambdaExpressionBody
+  
+  204 TimedExpression: "async" Expression
+    205                | "await" Expression
+  
+  206 Expression: ConditionalExpression
+    207           | AssignmentExpression
+    208           | QueryExpression
+    209           | LambdaExpression
+    210           | TimedExpression
+  
+  211 ConstantExpression: Expression
+  
+  212 BooleanExpression: Expression
+  
+  213 Statement: DeclarationStatement
+    214          | NormalStatement
+  
+  215 NormalStatement: Block
+    216                | EmptyStatement
+    217                | ExpressionStatement
+    218                | SelectionStatement
+    219                | IterationStatement
+    220                | JumpStatement
+    221                | TryStatement
+  
+  222 Block: "{" StatementRepeatOpt "}"
+  
+  223 StatementRepeatOpt: /* empty */
+    224                   | StatementRepeat
+  
+  225 StatementRepeat: Statement
+    226                | StatementRepeat Statement
+  
+  227 EmptyStatement: ";"
+  
+  228 DeclarationStatement: LocalVariableDeclaration ";"
+    229                     | LocalConstantDeclaration ";"
+  
+  230 LocalVariableDeclaration: Type VariableDeclaratorList
+  
+  231 VariableDeclaratorList: VariableDeclarator
+    232                       | VariableDeclaratorList "," VariableDeclarator
+  
+  233 VariableDeclarator: "identifier literal"
+    234                   | "identifier literal" "=" VariableInitializer
+  
+  235 VariableInitializer: Expression
+    236                    | ArrayInitializer
+  
+  237 LocalConstantDeclaration: "const" Type ConstantDeclaratorList
+  
+  238 ConstantDeclaratorList: ConstantDeclarator
+    239                       | ConstantDeclaratorList "," ConstantDeclarator
+  
+  240 ConstantDeclarator: "identifier literal" "=" ConstantExpression
+  
+  241 ExpressionStatement: StatementExpression ";"
+  
+  242 StatementExpression: InvocationExpression
+    243                    | ObjectCreationExpression
+    244                    | AssignmentExpression
+    245                    | PostIncrementExpression
+    246                    | PostDecrementExpression
+    247                    | PreIncrementExpression
+    248                    | PreDecrementExpression
+  
+  249 SelectionStatement: IfStatement
+    250                   | UnlessStatement
+    251                   | SwitchStatement
+  
+  252 IfStatement: "if" "(" Expression ")" NormalStatement
+    253            | "if" "(" Expression ")" NormalStatement "else" NormalStatement
+  
+  254 UnlessStatement: "unless" "(" Expression ")" NormalStatement
+    255                | "unless" "(" Expression ")" NormalStatement "else" NormalStatement
+  
+  256 SwitchStatement: "switch" "(" Expression ")" SwitchBlock
+  
+  257 SwitchBlock: "{" SwitchSectionRepeat "}"
+  
+  258 SwitchSectionRepeat: SwitchSection
+    259                    | SwitchSectionRepeat SwitchSection
+  
+  260 SwitchSection: SwitchLabelRepeat StatementRepeat
+  
+  261 SwitchLabelRepeat: SwitchLabel
+    262                  | SwitchLabelRepeat SwitchLabel
+  
+  263 SwitchLabel: "case" Expression ":"
+    264            | "default" ":"
+  
+  265 IterationStatement: WhileStatement
+    266                   | DoStatement
+    267                   | ForStatement
+    268                   | ForeachStatement
+  
+  269 WhileStatement: "while" "(" BooleanExpression ")" NormalStatement
+  
+  270 DoStatement: "do" NormalStatement "while" "(" BooleanExpression ")" ";"
+  
+  271 ForStatement: "for" "(" ForInitializerOpt ";" ForConditionOpt ";" ForIncrementOpt ")" NormalStatement
+  
+  272 ForInitializerOpt: /* empty */
+    273                  | ForInitializer
+  
+  274 ForConditionOpt: /* empty */
+    275                | ForCondition
+  
+  276 ForIncrementOpt: /* empty */
+    277                | ForIncrement
+  
+  278 ForInitializer: LocalVariableDeclaration
+    279               | StatementExpressionList
+  
+  280 ForCondition: BooleanExpression
+  
+  281 ForIncrement: StatementExpressionList
+  
+  282 StatementExpressionList: StatementExpression
+    283                        | StatementExpressionList "," StatementExpression
+  
+  284 ForeachStatement: "foreach" "(" Type "identifier literal" "in" Expression ")" NormalStatement
+  
+  285 JumpStatement: BreakStatement
+    286              | ContinueStatement
+    287              | ReturnStatement
+    288              | YieldStatement
+    289              | ThrowStatement
+  
+  290 BreakStatement: "break" ";"
+  
+  291 ContinueStatement: "continue" ";"
+  
+  292 ReturnStatement: "return" ";"
+    293                | "return" Expression ";"
+  
+  294 YieldStatement: "yield" ";"
+    295               | "yield" Expression ";"
+  
+  296 ThrowStatement: "throw" ";"
+    297               | "throw" Expression ";"
+  
+  298 TryStatement: "try" Block CatchClauseRepeat
+    299             | "try" Block FinallyClause
+    300             | "try" Block CatchClauseRepeat FinallyClause
+  
+  301 CatchClauseRepeat: CatchClause
+    302                  | CatchClauseRepeat CatchClause
+  
+  303 CatchClause: "catch" "(" Type ")" Block
+    304            | "catch" "(" Type "identifier literal" ")" Block
+    305            | "catch" Block
+  
+  306 FinallyClause: "finally" Block
+  
+  307 QualifiedIdentifier: "identifier literal"
+    308                    | Qualifier "identifier literal"
+  
+  309 Qualifier: "identifier literal" "."
+    310          | Qualifier "identifier literal" "."
+  
+  311 TypeDeclaration: MethodDeclaration
+  
+  312 ArrayInitializer: "{" VariableInitializerListOpt "}"
+    313                 | "{" VariableInitializerListOpt "," "}"
+  
+  314 VariableInitializerListOpt: /* empty */
+    315                           | VariableInitializerList
+  
+  316 VariableInitializerList: VariableInitializer
+    317                        | VariableInitializerList "," VariableInitializer
+  
+  318 MethodDeclaration: MethodHeader MethodBody
+  
+  319 MethodHeader: "void" QualifiedIdentifier "(" FormalParameterListOpt ")"
+    320             | Type QualifiedIdentifier "(" FormalParameterListOpt ")"
+    321             | QualifiedIdentifier "(" FormalParameterListOpt ")"
+  
+  322 FormalParameterListOpt: /* empty */
+    323                       | FormalParameterList
+  
+  324 MethodBody: Block
+    325           | ";"
+  
+  326 FormalParameterList: FormalParameter
+    327                    | FormalParameterList "," FormalParameter
+  
+  328 FormalParameter: FixedParameter
+    329                | ParameterArray
+  
+  330 FixedParameter: Type "identifier literal" ParameterInitializerOpt
+  
+  331 ParameterInitializerOpt: /* empty */
+    332                        | "=" ConstantExpression
+  
+  333 ParameterArray: "params" ArrayType "identifier literal"
+  
+
+\end{lstlisting}\end{scriptsize}\end{espacosimples}

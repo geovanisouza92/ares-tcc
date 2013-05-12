@@ -1,0 +1,13 @@
+
+main ()
+{
+	var nums = 2 .. 50;
+	for (var i = 2; i < 8; ++i)
+	  nums = filter( x => { return x == i || x % i; }, nums);
+	print(nums);
+	var sentence = "It is raining cats and {gs";
+	var words = sentence.split();
+	WriteLine(words);
+	var lengths = words.map(word => (word.length()));
+	print (lengths);
+}
