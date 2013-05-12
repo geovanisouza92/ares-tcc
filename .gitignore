@@ -1,0 +1,13 @@
+__*
+*.aux
+*.bb*
+*.blg
+*.ilg
+*.lo*
+*.sigla*
+*.symbol*
+*.toc
+*.out*
+er.pdf
+proposta-pesquisa.pdf
+tcc.pdf
